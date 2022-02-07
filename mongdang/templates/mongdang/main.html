@@ -25,27 +25,41 @@
         };
 
         function error(error) {
-            swal("현재 위치 조회 불가~☠", {
-                buttons: false,
-                timer: 1000,
-            }).then(function(response) {
-                //console.log(error);
+            Swal.fire({
+                icon: 'error',
+                html: '현재 위치 조회 불가~☠ ➡ 남산 타워 조회~⏳',
+                timer: 2000,
+                showConfirmButton:false,
+                showCancelButton: false,
+                timerProgressBar: true,
+            }).then((result) => {
                 seoulnstower();
             });
         };
 
         // HTML5의 GeoLocation을 사용할 수 있을 때,
-        if (navigator.geolocation) {
+        if (!navigator.geolocation) {
             // GeoLocation을 이용해서 접속 위치를 얻어옵니다.
             navigator.geolocation.getCurrentPosition(success, error);
-            swal("현재 위치 조회 중~⏳", {
-                buttons: false,
+
+            Swal.fire({
+                icon: 'info',
+                html: '현재 위치 조회 중~⏳',
+                timer: 5000,
+                timerProgressBar: true,
+                didOpen: () => {
+                    Swal.showLoading()
+                },
             });
         } else {
-            swal("GPS 사용 불가~☠", {
-                buttons: false,
-                timer: 1000,
-            }).then(function(response) {
+            Swal.fire({
+                icon: 'error',
+                html: 'GPS 사용 불가~☠ ➡ 남산 타워 조회~⏳',
+                timer: 2000,
+                showConfirmButton:false,
+                showCancelButton: false,
+                timerProgressBar: true,
+            }).then((result) => {
                 seoulnstower();
             });
         }

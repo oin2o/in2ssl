@@ -1,0 +1,145 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <title>몽당</title>
+    <style>
+        table{
+            width: 95%;
+        }
+        .td6{
+            font-size: 0.67em;
+            margin-left: 0;
+            margin-right: 0;
+        }
+        .td6c{
+            text-align:center;
+            font-size: 0.67em;
+            margin-left: 0;
+            margin-right: 0;
+        }
+        .tdh6{
+            font-size: 0.67em;
+            margin-left: 0;
+            margin-right: 0;
+            font-weight: bold;
+        }
+        .tdh6c{
+            text-align:center;
+            font-size: 0.67em;
+            margin-left: 0;
+            margin-right: 0;
+            font-weight: bold;
+        }
+    </style>
+    <script type="text/javascript">
+    function addnote() {
+        Swal.fire({
+            icon: 'question',
+            html: '쪽지 내용을 적어주세요.',
+            input: 'text',
+            inputAttributes: {
+                maxlength: 100,
+                placeholder: "뻐끔뻐끔",
+            },
+            showCancelButton: false,
+            confirmButtonText: '던지기',
+            showClass: {
+                popup: 'animate__animated animate__jackInTheBox'
+            },
+            hideClass: {
+                popup: 'animate__animated animate__hinge'
+            }
+        }).then((result) => {
+            if(result.isConfirmed && result.value != null && result.value != '') {
+                id_contents.value = result.value;
+                id_action.value = "addnote";
+                document.forms['paperform'].submit();
+            }
+        });
+    }
+
+    function listnotes() {
+        alert("notes")
+    }
+    </script>
+</head>
+<body>
+{% include "./menu.html" %}
+{% load static %}
+{% load mongdang_tags %}
+<form name="paperform" action="{% url 'mongdang:paper' user.username %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" id="id_action"/>
+    <input type="hidden" name="username" id="id_username" value="{{ user.username }}"/>
+    <input type="hidden" name="latitude" id="id_latitude" value="{{ latitude }}"/>
+    <input type="hidden" name="longitude" id="id_longitude" value="{{ longitude }}"/>
+    <input type="hidden" name="contents" id="id_contents"/>
+</form>
+<div id="paper_msg" style="text-align:center;">
+    <p class="text-warning">내 주변에 있는 쪽지가 보여집니다.</p>
+</div>
+<p style="text-indent: 0.5em;">
+    <div id="note_btn">
+        <table style="margin-left: auto;margin-right: auto;">
+            <tr>
+                <td class="tdh6" style="text-align:left;">
+                    <img id="pencil" onclick="listnotes()" src="{% static  'mongdang/images/' %}mongdang/pencil.png" style="width:10px;height:20px;">
+                </td>
+                <td class="tdh6" style="text-align:right;">
+                    <button type="button" onclick="addnote()" class="btn btn-outline-info" style="height:25px;padding-top:initial;padding-bottom:initial;">쪽지쓰기</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+</p>
+<p style="text-indent: 0.5em;">
+    <div id="map_wrap">
+        <div id="map" style="width:100%;height:75%;position:relative;overflow:hidden;"></div>
+    </div>
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=5322a0f7bce0519403d553814a9946c5"></script>
+<script>
+    var mapContainer = document.getElementById('map');
+    var mapOptions = {
+        center: new kakao.maps.LatLng({{ latitude }}, {{ longitude }}),
+        draggable: false,
+        level: 3
+    };
+
+    var map = new kakao.maps.Map(mapContainer, mapOptions);
+
+{% for note in notes %}
+    var locPosition = new kakao.maps.LatLng({{ note.latitude }}, {{ note.longitude }});
+
+    // 마커를 생성합니다
+    var marker = new kakao.maps.Marker({
+        map: map,
+        position: locPosition,
+    {% if note.user.username == user.username %}
+        image: new kakao.maps.MarkerImage('{% static  'mongdang/images/' %}mongdang/markerStar.png', new kakao.maps.Size(24, 35)) // 마커이미지 설정
+    {% else %}
+        image: new kakao.maps.MarkerImage('{% static  'mongdang/images/' %}mongdang/pencil.png', new kakao.maps.Size(20, 35)) // 마커이미지 설정
+    {% endif %}
+    });
+
+    // 마커에 클릭이벤트를 등록합니다
+    kakao.maps.event.addListener(marker, 'click', function() {
+        Swal.fire({
+            icon: 'success',
+            html: '{{ note.contents }}',
+            showConfirmButton:false,
+            showCancelButton: false,
+            showClass: {
+                popup: 'animate__animated animate__flipInX'
+            },
+            hideClass: {
+                popup: 'animate__animated animate__flipOutX'
+            }
+        });
+    });
+{% endfor %}
+</script>
+</p>
+</body>
+</html>

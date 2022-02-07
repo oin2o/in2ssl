@@ -5,5 +5,5 @@ app_name = 'mongdang'
 
 urlpatterns = [
     path('', views.MainView.as_view(), name='main'),
-    path('<str:username>', views.PencilView.as_view(), name='pencil'),
+    path('<str:username>', views.PaperView.as_view(), name='paper'),
 ]
