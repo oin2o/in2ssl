@@ -5,7 +5,7 @@
     <meta name="format-detection" content="telephone=no" />
     <title>몽당</title>
     <style>
-        table{
+        .tblmd{
             width: 95%;
         }
         .td6{
@@ -32,17 +32,27 @@
             margin-right: 0;
             font-weight: bold;
         }
+        .notes {
+            background-attachment: local;
+            background-image:
+                linear-gradient(to right, white 10px, transparent 10px),
+                linear-gradient(to left, white 10px, transparent 10px),
+                repeating-linear-gradient(white, white 30px, #ccc 30px, #ccc 31px, white 31px);
+            line-height: 31px;
+            padding: 8px;
+            border: none;
+            outline: none;
+        }
+        .align-left {
+            text-align: left;
+        }
     </style>
     <script type="text/javascript">
     function addnote() {
         Swal.fire({
             icon: 'question',
-            html: '쪽지 내용을 적어주세요.',
-            input: 'text',
-            inputAttributes: {
-                maxlength: 100,
-                placeholder: "뻐끔뻐끔",
-            },
+            html: '<div class="align-left">from.' + '{{ user.username }}' + '</div>'
+                + '<br><textarea class="notes" id="contents" cols="30" rows="6" maxlength="100" placeholder="뻐끔뻐끔"></textarea>',
             showCancelButton: false,
             confirmButtonText: '던지기',
             showClass: {
@@ -50,18 +60,67 @@
             },
             hideClass: {
                 popup: 'animate__animated animate__hinge'
-            }
+            },
+            preConfirm: () => {
+                const contents = Swal.getPopup().querySelector('#contents').value
+                if (!contents) {
+                    Swal.showValidationMessage(`쪽지 내용을 적어주세요.`)
+                }
+                return { contents: contents }
+            },
         }).then((result) => {
-            if(result.isConfirmed && result.value != null && result.value != '') {
-                id_contents.value = result.value;
+            if(result.isConfirmed && result.value.contents != null && result.value.contents != '') {
+                id_contents.value = result.value.contents;
                 id_action.value = "addnote";
                 document.forms['paperform'].submit();
             }
         });
     }
 
+    function getnote(username, contents) {
+        Swal.fire({
+            icon: 'success',
+            html: '<div class="align-left">from.' + username + '</div>'
+                + '<br><textarea class="notes" cols="30" rows="6" readonly>' + contents + '</textarea>',
+            showConfirmButton:false,
+            showCancelButton: false,
+            showClass: {
+                popup: 'animate__animated animate__flipInX'
+            },
+            hideClass: {
+                popup: 'animate__animated animate__flipOutX'
+            }
+        });
+    }
+
     function listnotes() {
-        alert("notes")
+        Swal.fire({
+            icon: 'success',
+            html: '<table class="table table-striped">'
+                    {% for note in notes %}
+                    + '<tr onclick="javascript:getnote(\'{{ note.user.username }}\',\'{{ note.contents }}\')">'
+                        + '<td style="width:40%">'
+                            + 'from.' + '{{ note.user.username|slice:"0:4" }}'
+                        + '</td>'
+                        + '<td>'
+                            + '{{ note.contents|slice:"0:10" }}'
+                        + '</td>'
+                    + '</tr>'
+                    {% endfor %}
+                + '</table>',
+            showCancelButton: false,
+            showConfirmButton: false,
+            showClass: {
+                popup: 'animate__animated animate__fadeInTopLeft'
+            },
+            hideClass: {
+                popup: 'animate__animated animate__fadeOutBottomRight'
+            }
+        }).then((result) => {
+            if(result.isConfirmed && result.value != null && result.value != '') {
+
+            }
+        });
     }
     </script>
 </head>
@@ -82,7 +141,7 @@
 </div>
 <p style="text-indent: 0.5em;">
     <div id="note_btn">
-        <table style="margin-left: auto;margin-right: auto;">
+        <table class="tblmd" style="margin-left: auto;margin-right: auto;">
             <tr>
                 <td class="tdh6" style="text-align:left;">
                     <img id="pencil" onclick="listnotes()" src="{% static  'mongdang/images/' %}mongdang/pencil.png" style="width:10px;height:20px;">
@@ -125,18 +184,7 @@
 
     // 마커에 클릭이벤트를 등록합니다
     kakao.maps.event.addListener(marker, 'click', function() {
-        Swal.fire({
-            icon: 'success',
-            html: '{{ note.contents }}',
-            showConfirmButton:false,
-            showCancelButton: false,
-            showClass: {
-                popup: 'animate__animated animate__flipInX'
-            },
-            hideClass: {
-                popup: 'animate__animated animate__flipOutX'
-            }
-        });
+        getnote('{{ note.user.username }}', '{{ note.contents }}');
     });
 {% endfor %}
 </script>

@@ -11,7 +11,7 @@ longitude_range = 0.0075
 def getnotes(latitude, longitude):
     now = datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d%H%M%S')
 
-    notes = Note.objects.filter(endtime__gt=now, latitude__range=(float(latitude)-latitude_range, float(latitude)+latitude_range), longitude__range=(float(longitude)-longitude_range, float(longitude)+longitude_range))
+    notes = Note.objects.filter(endtime__gt=now, latitude__range=(float(latitude)-latitude_range, float(latitude)+latitude_range), longitude__range=(float(longitude)-longitude_range, float(longitude)+longitude_range)).order_by('endtime')
 
     return notes
 
