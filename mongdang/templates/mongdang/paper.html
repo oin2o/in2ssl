@@ -131,8 +131,8 @@
             } else if (currentStep == 1) {
                 result = await swalQueueStep.fire({
                     icon: 'success',
-                    html: '댓글 리스트 출력 & 입력 필드 추가',
-                    showConfirmButton: false,
+                    html: '댓글 리스트 출력 & 입력 필드 추가(API 호출 필요)',
+                    showConfirmButton: true,
                     showCancelButton: true,
                     hideClass: {
                         popup: 'animate__animated animate__flipOutX'
@@ -147,6 +147,18 @@
             } else {
                 break;
             }
+        }
+
+        if (currentStep === steps) {
+            Swal.fire({
+                icon: 'success',
+                html: '댓글 등록 완료(API 호출 필요)',
+                showCancelButton: false,
+                showConfirmButton: false,
+                hideClass: {
+                    popup: 'animate__animated animate__flipOutX'
+                }
+            });
         }
     }
 
@@ -190,6 +202,8 @@
     <input type="hidden" name="latitude" id="id_latitude" value="{{ latitude }}"/>
     <input type="hidden" name="longitude" id="id_longitude" value="{{ longitude }}"/>
     <input type="hidden" name="contents" id="id_contents"/>
+    <input type="hidden" name="noteid" id="id_noteid"/>
+    <input type="hidden" name="comment" id="id_comment"/>
 </form>
 <div id="paper_msg" style="text-align:center;">
     <p class="text-warning">내 주변에 있는 쪽지가 보여집니다.</p>

@@ -1,6 +1,6 @@
 import datetime
 
-from .models import User, Note
+from .models import User, Note, Comment
 
 
 # 위도 기준 +0.01이 약 +1km, 경도 기준 +0.015가 약 +1km
@@ -35,5 +35,25 @@ def addnote(username, contents, latitude, longitude):
         )
 
         return True
-    else:
-        return False
+
+    return False
+
+
+def getcomments(noteid):
+    note = Note.objects.get(pk=noteid)
+    comments = Comment.objects.filter(note=note).order_by('id')
+
+    return comments
+
+
+def addcomment(username, noteid, comment):
+
+    user = User.objects.filter(username=username).first()
+    note = Note.objects.get(pk=noteid)
+    value, created = Comment.objects.get_or_create(
+        user=user,
+        note=note,
+        comment=comment,
+    )
+
+    return created

@@ -18,5 +18,14 @@ class Note(models.Model):
     endtime = models.CharField(max_length=100, help_text="종료시간")
 
     def __str__(self):
-        return str(self.user) + ':' + self.contents + ':' + str(self.latitude) + ':' + str(self.longitude) \
+        return str(self.id) + ':' + str(self.user) + ':' + self.contents + ':' + str(self.latitude) + ':' + str(self.longitude) \
                + ':' + str(self.registtime) + ':' + str(self.endtime)
+
+
+class Comment(models.Model):
+    note = models.ForeignKey(Note, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    comment = models.CharField(max_length=50, help_text="댓글 내용")
+
+    def __str__(self):
+        return str(self.id) + ':' + str(self.note) + ':' + str(self.user) + ':' + self.comment
