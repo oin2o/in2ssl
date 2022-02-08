@@ -21,8 +21,8 @@ def addnote(username, contents, latitude, longitude):
 
     now = datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d%H%M%S')
 
-    # 새로고침 등으로 동일 위치에서 동일 내용이 입력되는 경우는 추가하지 않음
-    note = Note.objects.filter(user=user, endtime__gt=now, contents=contents, latitude=latitude, longitude=longitude)
+    # 새로고침 등으로 동일 내용이 입력되는 경우는 추가하지 않음
+    note = Note.objects.filter(user=user, endtime__gt=now, contents=contents)
 
     if not note:
         value, created = Note.objects.get_or_create(

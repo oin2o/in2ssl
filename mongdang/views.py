@@ -54,6 +54,9 @@ class MainView(generic.ListView):
 class PaperView(generic.ListView):
     template_name = "mongdang/paper.html"
 
+    def get(self, request, username):
+        return HttpResponseRedirect(reverse('mongdang:main', ))
+
     def post(self, request, username):
         user = User.objects.filter(username=username).first()
 
