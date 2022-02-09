@@ -61,7 +61,6 @@
         };
 
         Swal.fire({
-            icon: 'question',
             html: '<div class="align-left">from.' + '{{ user.username }}' + '</div>'
                 + '<br><textarea class="notes" id="contents" cols="30" rows="6" maxlength="100" placeholder="뻐끔뻐끔"></textarea>',
             showCancelButton: false,
@@ -120,7 +119,6 @@
         for (currentStep = 0; currentStep < steps;) {
             if (currentStep == 0) {
                 result = await swalQueueStep.fire({
-                    icon: 'success',
                     html: '<div class="align-left">from.' + username + '</div>'
                         + '<br><textarea class="notes" cols="30" rows="6" readonly>' + contents + '</textarea>',
                     showConfirmButton: true,
@@ -166,7 +164,7 @@
                 });
             } else if (currentStep == 1) {
                 result = await swalQueueStep.fire({
-                    icon: 'success',
+                    icon: 'question',
                     html: comments,
                     input: 'text',
                     inputPlaceholder: '댓글을 적어주세요.',
