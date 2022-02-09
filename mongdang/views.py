@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.shortcuts import render
 from django.views import generic
 
-from .models import User, Comment
+from .models import User
 from .apis import getnotes, addnote, getcomments, addcomment
 from .serializers import NoteSerializer, CommentSerializer
 
@@ -45,6 +45,7 @@ class CommentsAPI(APIView):
                 return Response(serializer.data)
 
         elif action == "addcomment":
+            print(noteid, username, comment)
             # 노트 ID, 사용자, 댓글이 모두 있는 경우만 등록
             if noteid and username and comment:
                 result = addcomment(username, noteid, comment)

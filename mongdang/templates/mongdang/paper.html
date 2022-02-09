@@ -105,7 +105,7 @@
         });
     }
 
-    async function getnote(username, contents) {
+    async function getnote(username, contents, noteid) {
         const steps = 2;
         const swalQueueStep = Swal.mixin({
             confirmButtonText: '댓글 ✏',
@@ -115,6 +115,7 @@
 
         let currentStep;
         let result;
+        let comments;
 
         for (currentStep = 0; currentStep < steps;) {
             if (currentStep == 0) {
@@ -124,24 +125,107 @@
                         + '<br><textarea class="notes" cols="30" rows="6" readonly>' + contents + '</textarea>',
                     showConfirmButton: true,
                     showCancelButton: false,
+                    preConfirm: () => {
+                        return fetch(`/mongdang/api/comments/`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'X-CSRFToken': '{{csrf_token}}'
+                            },
+                            body:new URLSearchParams('action=getcomments&noteid=' + noteid)
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(response.statusText)
+                            }
+                            return response.json()
+                        })
+                        .catch(error => {
+                            Swal.showValidationMessage(`Request failed: ${error}`)
+                        })
+                    },
                     hideClass: {
                         popup: 'animate__animated animate__flipOutX'
                     }
+                }).then((result) => {
+                    comments = '<div style="overflow-x:hidden; overflow-y:scroll; height:150px;">'
+                        + '<table class="table table-striped">';
+                    for (var comment in result.value) {
+                        comments += '<tr>'
+                                + '<td style="width:40%">'
+                                    + 'from.' + result.value[comment].user.username
+                                + '</td>'
+                                + '<td>'
+                                    + result.value[comment].comment
+                                + '</td>'
+                            + '</tr>';
+                    }
+                    comments += '</table>' + '</div>';
+
+                    return result
                 });
             } else if (currentStep == 1) {
                 result = await swalQueueStep.fire({
                     icon: 'success',
-                    html: '댓글 리스트 출력 & 입력 필드 추가(API 호출 필요)',
+                    html: comments,
+                    input: 'text',
+                    inputPlaceholder: '댓글을 적어주세요.',
+                    inputAttributes: {
+                        maxlength: 50
+                    },
                     showConfirmButton: true,
                     showCancelButton: true,
+                    showDenyButton: true,
+                    denyButtonText: '덮기',
+                    preConfirm: (comment) => {
+                        return fetch(`/mongdang/api/comments/`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'X-CSRFToken': '{{csrf_token}}'
+                            },
+                            body:new URLSearchParams('action=addcomment'
+                                + '&username=' + '{{ user.username }}'
+                                + '&noteid=' + noteid
+                                + '&comment=' + comment
+                                )
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(response.statusText)
+                            }
+                            return response.json()
+                        })
+                        .catch(error => {
+                            Swal.showValidationMessage(`Request failed: ${error}`)
+                        })
+                    },
                     hideClass: {
                         popup: 'animate__animated animate__flipOutX'
                     }
+                }).then((result) => {
+                    comments = '<div style="overflow-x:hidden; overflow-y:scroll; height:150px;">'
+                        + '<table class="table table-striped">';
+                    for (var comment in result.value) {
+                        comments += '<tr>'
+                                + '<td style="width:40%">'
+                                    + 'from.' + result.value[comment].user.username
+                                + '</td>'
+                                + '<td>'
+                                    + result.value[comment].comment
+                                + '</td>'
+                            + '</tr>';
+                    }
+                    comments += '</table>' + '</div>';
+
+                    return result
                 });
             }
 
             if (result.value) {
-                currentStep++;
+                if (currentStep != 1) {
+                    currentStep++;
+                }
             } else if (result.dismiss === Swal.DismissReason.cancel) {
                 currentStep--;
             } else {
@@ -165,10 +249,10 @@
     function listnotes() {
         Swal.fire({
             icon: 'success',
-            html: '<div style="overflow-x:hidden; overflow-y:scroll; height:250px;">'
+            html: '<div style="overflow-x:hidden; overflow-y:scroll; height:150px;">'
                     + '<table class="table table-striped">'
                         {% for note in notes %}
-                        + '<tr onclick="javascript:getnote(\'{{ note.user.username }}\',\'{{ note.contents }}\')">'
+                        + '<tr onclick="javascript:getnote(\'{{ note.user.username }}\',\'{{ note.contents }}\',\'{{ note.id }}\')">'
                             + '<td style="width:40%">'
                                 + 'from.' + '{{ note.user.username|slice:"0:4" }}'
                             + '</td>'
@@ -214,7 +298,7 @@
             <tr>
                 <td class="tdh6" style="text-align:left;">
                 {% if notes|length > 0 %}
-                    <img id="pencil" onclick="listnotes()" src="{% static  'mongdang/images/' %}mongdang/pencil.png" style="width:10px;height:20px;">
+                    <img id="pencil" onclick="listnotes()" src="{% static  'mongdang/images/' %}mongdang/pencil.png" style="width:24px;height:24px;">
                 {% endif %}
                 </td>
                 <td class="tdh6" style="text-align:right;">
@@ -249,13 +333,13 @@
     {% if note.user.username == user.username %}
         image: new kakao.maps.MarkerImage('{% static  'mongdang/images/' %}mongdang/markerStar.png', new kakao.maps.Size(24, 35)) // 마커이미지 설정
     {% else %}
-        image: new kakao.maps.MarkerImage('{% static  'mongdang/images/' %}mongdang/pencil.png', new kakao.maps.Size(20, 35)) // 마커이미지 설정
+        image: new kakao.maps.MarkerImage('{% static  'mongdang/images/' %}mongdang/pencil.png', new kakao.maps.Size(24, 36)) // 마커이미지 설정
     {% endif %}
     });
 
     // 마커에 클릭이벤트를 등록합니다
     kakao.maps.event.addListener(marker, 'click', function() {
-        getnote('{{ note.user.username }}', '{{ note.contents }}');
+        getnote('{{ note.user.username }}', '{{ note.contents }}', '{{ note.id }}');
     });
 {% endfor %}
 </script>
