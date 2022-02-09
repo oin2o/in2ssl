@@ -45,7 +45,6 @@ class CommentsAPI(APIView):
                 return Response(serializer.data)
 
         elif action == "addcomment":
-            print(noteid, username, comment)
             # 노트 ID, 사용자, 댓글이 모두 있는 경우만 등록
             if noteid and username and comment:
                 result = addcomment(username, noteid, comment)
